@@ -1,7 +1,7 @@
 import mysql.connector
 from tkinter import *
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import ttk, messagebox, scrolledtext
 
 
 connection = mysql.connector.connect(
@@ -14,18 +14,28 @@ connection = mysql.connector.connect(
 cursor = connection.cursor()
 
 def display_results(columns, data):
+    clear_results()
+
+    # Create a Treeview widget to display results
+    tree = ttk.Treeview(results, columns=columns, show='headings')
+    tree.pack()
+
+    # Set column headings
+    for col in columns:
+        tree.heading(col, text=col)
+        tree.column(col, width=100)  # Adjust width as needed
+
+    # Insert data into the treeview
+    for row in data:
+        tree.insert("", tk.END, values=row)
+
+def clear_results():
     for widget in results.winfo_children():
         widget.destroy()
-    for i in range(len(columns)):
-        entry = Entry(results, width = 20, fg = "black", font = ("Arial", 12))
-        entry.grid(row = 0, column = i)
-        entry.insert(END, columns[i])
-    
-    for i in range(len(data)):
-        for j in range(len(data[0])):
-            entry = Entry(results, width = 20, fg = "black", font = ("Arial", 12))
-            entry.grid(row = i+1, column = j)
-            entry.insert(END, data[i][j])
+
+def clear_results():
+    for widget in results.winfo_children():
+        widget.destroy()
 
 def execute_query(query):
     arr = []
@@ -57,6 +67,7 @@ def clear_options():
         widget.destroy()
 
 def show_buttons(button_list):
+    
     r = 0
     c = 0
     for button_data in button_list:
@@ -66,6 +77,7 @@ def show_buttons(button_list):
         if c >= 2:
             c = 0
             r += 1
+    
 
 
 
