@@ -1,8 +1,6 @@
 import mysql.connector
 from tkinter import *
-import tkinter as tk
-from tkinter import ttk, messagebox, scrolledtext
-
+from tkinter.ttk import *
 
 connection = mysql.connector.connect(
     host = "4.tcp.ngrok.io",
@@ -17,8 +15,14 @@ def display_results(columns, data):
     clear_results()
 
     # Create a Treeview widget to display results
-    tree = ttk.Treeview(results, columns=columns, show='headings')
-    tree.pack()
+    tree = Treeview(results, columns=columns, show='headings')
+    scrollbar = Scrollbar(results, orient=VERTICAL, command=tree.yview)
+    tree.configure(yscroll=scrollbar.set)
+    tree.grid(row=0, column=0)
+    scrollbar.grid(row=0, column=1, sticky="ns")
+
+    #scrollbar.pack()
+    #tree.pack()
 
     
     for col in columns:
@@ -27,11 +31,7 @@ def display_results(columns, data):
 
     # Insert data into the treeview
     for row in data:
-        tree.insert("", tk.END, values=row)
-
-def clear_results():
-    for widget in results.winfo_children():
-        widget.destroy()
+        tree.insert("", END, values=row)
 
 def clear_results():
     for widget in results.winfo_children():
@@ -41,8 +41,8 @@ def execute_query(query):
     arr = []
     try:
         cursor.execute(query)
-    except:
-        print("sql error")
+    except mysql.connector.Error as e:
+        print("MySQL error: {}".format(e))
     for item in cursor:
         arr.append(item)
     display_results(cursor.column_names, arr)
@@ -69,7 +69,7 @@ def show_buttons(button_list):
     r = 0
     c = 0
     for button_data in button_list:
-        button = tk.Button(options_frame, text=button_data[1], command=lambda qr=button_data[0]: execute_query(qr))
+        button = Button(options_frame, text=button_data[1], command=lambda qr=button_data[0]: execute_query(qr))
         button.grid(row=r, column=c, padx=10, pady=10)
         c += 1
         if c >= 2:
@@ -79,27 +79,27 @@ def show_buttons(button_list):
 
 
 
-window = tk.Tk()
+window = Tk()
 window.title("Healthcare Management System")
 
 # User mode buttons
-user_mode_frame = tk.Frame(window)
-user_mode_label = tk.Label(user_mode_frame, text="Select User Mode:")
+user_mode_frame = Frame(window)
+user_mode_label = Label(user_mode_frame, text="Select User Mode:")
 user_mode_label.pack()
 
-admin_button = tk.Button(user_mode_frame, text="Admin", command=admin_mode)
+admin_button = Button(user_mode_frame, text="Admin", command=admin_mode)
 admin_button.pack(side="left", padx=10)
 
-employee_button = tk.Button(user_mode_frame, text="Employee", command=employee_mode)
+employee_button = Button(user_mode_frame, text="Employee", command=employee_mode)
 employee_button.pack(side="left", padx=10)
 
-patient_button = tk.Button(user_mode_frame, text="Patient", command=patient_mode)
+patient_button = Button(user_mode_frame, text="Patient", command=patient_mode)
 patient_button.pack(side="left", padx=10)
 
 user_mode_frame.pack()
 
 # Buttons frame for options
-options_frame = tk.Frame(window)
+options_frame = Frame(window)
 options_frame.pack(pady=20)
 
 # Queries for different user roles
@@ -134,8 +134,7 @@ admin_queries = [
                     (select EID from employee_phone group by EID having count(EID) > 1) as subquery
                     where employee.EID = subquery.EID;""", "Get names of employees with more than one phone number"),
     ("""Select doctor.name_first, doctor.name_last from doctor,
-                    inner join(
-                    (select * from report where timestampdiff(date, curdate()) <= 31)) as subquery
+                    (select * from report where timestampdiff(day, curdate(), date) <= 31) as subquery
                     where doctor.EID = subquery.EID""", "Get doctors who have written at least one report in the past month"),
     ("select *, ntile(4) over (order by salary) from employee order by salary", "Separate employees into salary quartiles")
 ]
