@@ -47,12 +47,10 @@ def execute_query(query):
         arr.append(item)
     display_results(cursor.column_names, arr)
 
-def func(n):
-    execute_query(queries[n][0])
 
 def admin_mode():
     clear_options()
-    show_buttons(queries)
+    show_buttons(admin_queries)
 
 def employee_mode():
     clear_options()
@@ -105,7 +103,7 @@ options_frame = tk.Frame(window)
 options_frame.pack(pady=20)
 
 # Queries for different user roles
-queries = [
+admin_queries = [
     ("select * from patient inner join patient_phone on patient.mrn=patient_phone.mrn", "Join patient + patient's phone number"),
     ("update patient_phone set phone=\"7735068524\" where mrn=\"1487426\"", "Update a phone number"),
     ("select * from (select name_first, name_last, bill.MRN, issue_date, amount, rank() over (order by amount desc) as \"Priority by Quantity\" from (patient inner join bill on patient.mrn = bill.mrn)) as table1", "Sort bill quantities in the hospital by quantity"),
