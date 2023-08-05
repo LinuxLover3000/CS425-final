@@ -20,10 +20,6 @@ def display_results(columns, data):
     tree.configure(yscroll=scrollbar.set)
     tree.grid(row=0, column=0)
     scrollbar.grid(row=0, column=1, sticky="ns")
-
-    #scrollbar.pack()
-    #tree.pack()
-
     
     for col in columns:
         tree.heading(col, text=col)
@@ -41,11 +37,12 @@ def execute_query(query):
     arr = []
     try:
         cursor.execute(query)
+        for item in cursor:
+            arr.append(item)
+        display_results(cursor.column_names, arr)
     except mysql.connector.Error as e:
         print("MySQL error: {}".format(e))
-    for item in cursor:
-        arr.append(item)
-    display_results(cursor.column_names, arr)
+    
 
 
 def admin_mode():
@@ -143,15 +140,11 @@ employee_queries = [
     ("SELECT CONCAT(nurse.name_last, ', ', nurse.name_first) AS name, room.number as room_assignment, patient.MRN AS patient_assignment FROM nurse INNER JOIN room ON nurse.EID = room.EID LEFT JOIN patient ON room.MRN = patient.MRN order by name", "Nurse Assignments"),
     ("SELECT CONCAT(doctor.name_last, ', ', doctor.name_first) AS name, room.number as room_assignment, patient.MRN AS patient_assignment FROM doctor, patient, room Where patient.EID = doctor.EID and patient.MRN = room.MRN order by name", "Doctor Assignments"),
     ("SELECT doctor.type AS department, CONCAT(employee.name_last, ', ', employee.name_first) AS name, employee_phone.phone as phone_number FROM employee, employee_phone, doctor, nurse Where employee.EID = employee_phone.EID and doctor.EID = employee.EID UNION SELECT doctor.type AS department, CONCAT(employee.name_last, ', ', employee.name_first) AS name, employee_phone.phone as phone_number FROM employee, employee_phone, doctor, nurse Where employee.EID = employee_phone.EID and nurse.EID = employee.EID ORDER BY department, name", "Employee Contact List"),
-    ("nurse_query_1", "Nurse Query 1"),
-    # ... (more doctor and nurse queries)
 ]
 
 patient_queries = [
     ("select doctor.type as department, CONCAT(doctor.name_first, ' ', doctor.name_last) AS name, employee_phone.phone from doctor inner join employee_phone on doctor.EID=employee_phone.EID order by type", "Doctor Contact info"),
     ("select nurse.type as department, CONCAT(nurse.name_first, ' ', nurse.name_last) AS name, employee_phone.phone from nurse inner join employee_phone on nurse.EID=employee_phone.EID order by type", "Nurse Contact info"),
-    ("patient_query_1", "patient Query 1"),
-    # ... (more patient queries)
 ]
 
 buttons = Frame(window)
